@@ -4,12 +4,11 @@
 
 //**********************DC Motor Class*******************
 
-DcMotor::DcMotor(int pin_fwd, int pin_bkwd, Direction dir=FORWARD, int pwm_resolution=8)
+DcMotor::DcMotor(int pin_fwd, int pin_bkwd, Direction dir=FORWARD)
 {
     _pin_fwd = pin_fwd;
     _pin_bkwd = pin_bkwd;
     direction = dir;
-    pwm_res = pwm_resolution;
     max_pwm_value = pow(2, pwm_res);  //not as readable, but if we do this calc here and store it, less math later
 
     
@@ -92,9 +91,9 @@ float Odometer::getSpeed()
 }
 
 //************************Encoder DC Motor Class*****************
-EncoderDcMotor::EncoderDcMotor(int pin_fwd, int pin_bkwd, Direction dir, int pwm_resolution=8,
+EncoderDcMotor::EncoderDcMotor(int pin_fwd, int pin_bkwd, Direction dir,
                                     int enc_pin_1, int enc_pin_2, int maxspeed, float kp, float ki, float kd) : 
-                                    dc_motor(DcMotor(pin_fwd, pin_bkwd, dir, pwm_resolution)),
+                                    dc_motor(DcMotor(pin_fwd, pin_bkwd, dir)),
                                     odometer(Odometer(enc_pin_1, enc_pin_2)),
                                     pid_controller(PID(&_input, &_output, &_setpoint, kp, ki, kd, DIRECT))
 {
@@ -122,7 +121,7 @@ void EncoderDcMotor::update()
         //rather than active control to slow the motor down. Some amount of negative 
         //current may be acceptable to control more effectively, but for now we're playing it
         //safe. 
-        if ((_output<0)==(_setpoint<0))
+        if ((_output<0)==(_setpoint<0))  //sign check to see if the command is in the opposite direction it's turning
         {
             dc_motor.setPower(_output/1000);
         }
